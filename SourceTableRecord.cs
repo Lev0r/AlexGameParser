@@ -11,11 +11,9 @@ namespace AlexGameParser
 
         public string RealNickname { get; set; }
 
-        public decimal MoneyCollected { get; set; }
-
         public override string ToString()
         {
-            return $"{Time.ToString(PanelTimeFormat)} {RealNickname} collected {MoneyCollected}";
+            return $"{Time.ToString(PanelTimeFormat)} {RealNickname} {GameBlockId}";
         }
     }
 }

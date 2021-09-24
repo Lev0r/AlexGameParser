@@ -33,7 +33,7 @@ namespace AlexGameParser
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);
-            
+
             panel1.DragEnter -= LeftPaneLDragEnter;
             panel1.DragDrop -= LeftPanelDragDrop;
 
@@ -47,7 +47,7 @@ namespace AlexGameParser
             if (files.Length != 1)
             {
                 MessageBox.Show(@"Specify exactly 1 table file");
-                return;;
+                return; ;
             }
 
             var filePath = files[0];
@@ -90,11 +90,11 @@ namespace AlexGameParser
             var collectedRegex = new Regex(@"(.*) collected \$([0-9]*\.?[0-9])");
             var showDownSectionRegex = new Regex(@"\*\*\* .*SHOWDOWN.*\*\*\*");
             var summarySectionRegex = new Regex(@"\*\*\* .*SUMMARY.*\*\*\*");
-            
+
 
             var fileContent = new StringBuilder();
             var parseResult = new List<GameBlockRecord>();
-            
+
             using (var fStream = new StreamReader(filePath))
             {
                 string currentLine;
@@ -115,7 +115,6 @@ namespace AlexGameParser
                         {
                             isInsideGameBlock = true;
                             currentGameBlock.GameBlockId = match.Groups[1].Value;
-                            currentGameBlock.Time = DateTime.Parse(match.Groups[2].Value);
                         }
                     }
                     else
@@ -129,9 +128,9 @@ namespace AlexGameParser
 
                             if (summarySectionRegex.IsMatch(currentLine))
                             {
-                                if(!isMultipleShowdowns)
+                                if (!isMultipleShowdowns)
                                     parseResult.Add(currentGameBlock);
-                                    
+
                                 isInsideGameBlock = false;
                                 isInShowDownSection = false;
                                 isMultipleShowdowns = false;
@@ -141,7 +140,6 @@ namespace AlexGameParser
                             var match = collectedRegex.Match(currentLine);
                             if (match.Success)
                             {
-                                currentGameBlock.CollectedMoney = decimal.Parse(match.Groups[2].Value);
                                 currentGameBlock.Hero = match.Groups[1].Value;
                             }
                         }
@@ -164,50 +162,18 @@ namespace AlexGameParser
         private void ReadTableFile(string filePath)
         {
             _sourceTableRecords.Clear();
-            var lineNumber = 1;
             using (var fStream = new StreamReader(filePath))
             {
                 using (var csv = new CsvReader(fStream, CultureInfo.InvariantCulture))
                 {
                     while (csv.Read())
                     {
-                        var recordTimeAsString = csv.GetField(0);
-                        var isDateTimeParsed = DateTime.TryParseExact(
-                            recordTimeAsString,
-                            "MMM dd, HH:mm",
-                            CultureInfo.InvariantCulture,
-                            DateTimeStyles.None,
-                            out var recordTimeResult);
-
-                        if (!isDateTimeParsed)
-                        {
-                            MessageBox.Show(
-                                $@"Cannot parse time value in line {lineNumber}: <{recordTimeAsString}>. Make sure format is similar to this: <Sep 02, 22:14>");
-                            continue;
-                        }
-
-                        var collectedMoneyAsString = csv.GetField(5);
-                        var isCollectedMoneyParsed = decimal.TryParse(
-                            collectedMoneyAsString.Trim(new[] { '$' }),
-                            out var collectedMoneyResult
-                        );
-
-                        if (!isCollectedMoneyParsed)
-                        {
-                            MessageBox.Show(
-                                $@"Cannot parse money value in line {lineNumber}: <{collectedMoneyAsString}>. Make sure format is similar to this: <$103.60>");
-                            continue;
-                        }
-
                         var record = new SourceTableRecord
                         {
-                            Time = recordTimeResult,
                             RealNickname = csv.GetField(4),
-                            MoneyCollected = collectedMoneyResult,
                             GameBlockId = csv.GetField(1)
                         };
                         _sourceTableRecords.Add(record);
-                        lineNumber++;
                     }
                 }
             }
@@ -246,7 +212,7 @@ namespace AlexGameParser
                         .Select(str => str.RealNickname)
                         .ToList();
 
-                    if(!realNicknames.Any() || realNicknames.Count() > 1)
+                    if (!realNicknames.Any() || realNicknames.Count() > 1)
                         continue;
 
                     var realNickname = realNicknames.Single();
